@@ -38,9 +38,9 @@ async def lifespan(app: FastAPI):
         index_name = variables.ELASTICSEARCH_INDEX_NAME
         logger.info(f"Using Elasticsearch index name: {index_name}")
 
-        es_client = ElasticsearchCoon(es_url, index_name, mapping)
+        es_client = ElasticsearchCoon(es_url)
         set_es_client(es_client.get_es_client())
-        await es_client.initialize_index()
+        await es_client.initialize_index(index_name, mapping)
 
         processor = DataProcessor()
         asyncio.create_task(processor.process())

@@ -194,3 +194,6 @@ class ElasticSearchRepository:
         except Exception as e:
             logger.error(f"Count query failed: {e}", exc_info=True)
             return 0
+
+    async def refresh(self):
+        return await self.es.indices.refresh(index=self.index_name)

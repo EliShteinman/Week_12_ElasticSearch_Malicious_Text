@@ -24,9 +24,13 @@ class DataProcessor:
 
     async def process(self):
         await self._load_and_index_tweets()
+        await self.es_repository.refresh()
         await self._enrich_documents_with_emotion()
+        await self.es_repository.refresh()
         await self._enrich_documents_with_weapon_info()
+        await self.es_repository.refresh()
         await self._cleanup_irrelevant_documents()
+        await self.es_repository.refresh()
 
     async def _load_and_index_tweets(self):
         tweets_df = self.data_loader.load_data(variables.TWEETS_PATH)

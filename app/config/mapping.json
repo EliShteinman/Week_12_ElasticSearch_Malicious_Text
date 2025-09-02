@@ -1,0 +1,12 @@
+{
+    "properties": {
+        "TweetID": {"type": "float"},
+        "CreateDate": {"type": "date"},
+        "Antisemitic": {"type": "boolean"},
+        "text": {"type": "text"},
+        "emotion": {"type": "keyword"},
+        "weapons": {"type": "keyword"},
+        "created_at": {"type": "date"},
+        "updated_at": {"type": "date"}
+    }
+}

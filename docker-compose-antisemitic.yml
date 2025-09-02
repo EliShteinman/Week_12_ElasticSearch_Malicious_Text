@@ -1,0 +1,70 @@
+name: elasticsearch-stack-antisemitic
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.1.2
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data_newsgroups:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - elastic_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.1.2
+    restart: unless-stopped
+    depends_on:
+      elasticsearch: { condition: service_healthy }
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    networks:
+      - elastic_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  antisemitic:
+    build:
+      context: app
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      elasticsearch: { condition: service_healthy }
+    ports:
+      - "8182:8182"
+    environment:
+      - ELASTICSEARCH_PROTOCOL=http
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+      - LOG_LEVEL=INFO
+      - ELASTICSEARCH_INDEX=antisemitic
+    networks:
+      - elastic_network
+    healthcheck:
+        test: ["CMD-SHELL", "curl -f http://localhost:8182/health || exit 1"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+        start_period: 60s
+
+volumes:
+  elasticsearch_data_newsgroups:
+
+networks:
+  elastic_network:
+    driver: bridge

@@ -1,16 +1,13 @@
 
 import logging
-import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, AsyncGenerator, Iterable
+from typing import Any, Dict, List, Optional, AsyncGenerator
 
 import pandas as pd
 from elasticsearch import AsyncElasticsearch
-from elasticsearch.exceptions import NotFoundError
 from elasticsearch.helpers import async_bulk, async_scan
 from app.config import variables
-from app.models import (DocumentCreate, DocumentResponse, DocumentUpdate,
-                        SearchResponse)
+from app.models import (DocumentResponse, SearchResponse)
 logger = logging.getLogger(__name__)
 
 

@@ -1,7 +1,7 @@
-import logging
-from typing import Literal, Optional, Dict, Callable, Any, List
-from pathlib import Path
 import json
+import logging
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Literal, Optional
 
 import pandas as pd
 
@@ -47,9 +47,7 @@ class DataLoader:
         }
 
         if data_path:
-            logger.info(
-                f"DataLoader initialized for default path='{self.data_path}'"
-            )
+            logger.info(f"DataLoader initialized for default path='{self.data_path}'")
         else:
             logger.info("DataLoader initialized without a default data path.")
 
@@ -85,7 +83,9 @@ class DataLoader:
             loader_type = self._get_loader_type_from_path(current_path)
             load_method = self._load_method_map[loader_type]
 
-            logger.info(f"Attempting to load data from '{current_path}' using method '{loader_type}'")
+            logger.info(
+                f"Attempting to load data from '{current_path}' using method '{loader_type}'"
+            )
             return load_method(current_path, **kwargs)
 
         except FileNotFoundError:
@@ -144,7 +144,7 @@ class DataLoader:
         This method reads the file line by line and creates a single-column DataFrame.
         """
         logger.debug(f"Executing _load_txt on {path}")
-        with open(path, 'r', encoding=self._encoding) as f:
+        with open(path, "r", encoding=self._encoding) as f:
             lines = [line.strip() for line in f.readlines()]
 
         col_name = kwargs.get("names", ["text"])[0]
@@ -158,7 +158,7 @@ class DataLoader:
         """
         logger.debug(f"Executing _load_json on {path}")
         try:
-            with open(path, 'r', encoding=self._encoding) as f:
+            with open(path, "r", encoding=self._encoding) as f:
                 data = json.load(f)
 
             # המר ל-DataFrame
@@ -192,7 +192,7 @@ class DataLoader:
         """
         logger.debug(f"Executing _load_mapping on {path}")
         try:
-            with open(path, 'r', encoding=self._encoding) as f:
+            with open(path, "r", encoding=self._encoding) as f:
                 mapping = json.load(f)
 
             logger.info(f"Successfully loaded mapping from {path}")
@@ -233,15 +233,16 @@ class DataLoader:
 
         return self._load_mapping(current_path)
 
-
-    def load_lines_as_list(self, path: Optional[str] = None, strip_empty: bool = True) -> List[str]:
+    def load_lines_as_list(
+        self, path: Optional[str] = None, strip_empty: bool = True
+    ) -> List[str]:
         """Load text file lines directly as a list of strings."""
         current_path = path or self.data_path
         if not current_path:
             raise ValueError("No data path provided.")
 
         try:
-            with open(current_path, 'r', encoding=self._encoding) as f:
+            with open(current_path, "r", encoding=self._encoding) as f:
                 lines = [line.strip() for line in f.readlines()]
 
             if strip_empty:

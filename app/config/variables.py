@@ -19,7 +19,6 @@ DEFAULT_SEARCH_LIMIT = int(os.getenv("DEFAULT_SEARCH_LIMIT", 10))
 MAX_SEARCH_LIMIT = int(os.getenv("MAX_SEARCH_LIMIT", 100))
 
 
-
 WEAPONS_PATH = os.getenv("WEAPONS_PATH", "data/weapons.txt")
 TWEETS_PATH = os.getenv("TWEETS_PATH", "data/tweets.csv")
 MAPPING_PATH = os.getenv("MAPPING_PATH", "config/mapping.json")

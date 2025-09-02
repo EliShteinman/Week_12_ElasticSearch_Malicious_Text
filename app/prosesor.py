@@ -1,12 +1,14 @@
 import logging
 from datetime import datetime, timezone
-from typing import AsyncGenerator, Dict, Any, Callable, Optional
+from typing import Any, AsyncGenerator, Callable, Dict, Optional
+
 import pandas as pd
+
 from app.config import variables
-from app.dependencies.elasticsearch import get_es_client
 from app.dal.data_loader import DataLoader
-from app.utils.sentiment_analyzer import SentimentAnalyzer
+from app.dependencies.elasticsearch import get_es_client
 from app.utils.elasticSearch_repository import ElasticSearchRepository
+from app.utils.sentiment_analyzer import SentimentAnalyzer
 from app.utils.weapon_detector import WeaponDetector
 
 logger = logging.getLogger(__name__)
@@ -36,19 +38,21 @@ class DataProcessor:
         if df.empty:
             return df
         df_clean = df.copy()
-        df_clean['CreateDate'] = pd.to_datetime(df_clean.get('CreateDate'), errors='coerce')
-        df_clean['TweetID'] = pd.to_numeric(df_clean.get('TweetID'), errors='coerce')
-        df_clean.dropna(subset=['CreateDate', 'TweetID', 'text'], inplace=True)
-        df_clean['TweetID'] = df_clean['TweetID'].astype(float)
-        df_clean['Antisemitic'] = df_clean['Antisemitic'].astype(bool)
+        df_clean["CreateDate"] = pd.to_datetime(
+            df_clean.get("CreateDate"), errors="coerce"
+        )
+        df_clean["TweetID"] = pd.to_numeric(df_clean.get("TweetID"), errors="coerce")
+        df_clean.dropna(subset=["CreateDate", "TweetID", "text"], inplace=True)
+        df_clean["TweetID"] = df_clean["TweetID"].astype(float)
+        df_clean["Antisemitic"] = df_clean["Antisemitic"].astype(bool)
         return df_clean
 
     async def _generic_enrich_documents(
-            self,
-            field_name: str,
-            analyzer_func: Callable[[str], Any],
-            search_params: Dict[str, Any],
-            process_name: str
+        self,
+        field_name: str,
+        analyzer_func: Callable[[str], Any],
+        search_params: Dict[str, Any],
+        process_name: str,
     ) -> Optional[Dict[str, Any]]:
         """
         Generic method for enriching documents with analyzed data.
@@ -68,8 +72,7 @@ class DataProcessor:
 
         async def generate_update_actions() -> AsyncGenerator[Dict[str, Any], None]:
             stream = self.es_repository.stream_all_documents(
-                fields_to_include=["text"],
-                **search_params
+                fields_to_include=["text"], **search_params
             )
 
             processed_count = 0
@@ -86,13 +89,15 @@ class DataProcessor:
                         "_id": doc["_id"],
                         "doc": {
                             field_name: analyzed_result,
-                            "updated_at": datetime.now(timezone.utc)
-                        }
+                            "updated_at": datetime.now(timezone.utc),
+                        },
                     }
                     processed_count += 1
 
                     if processed_count % 100 == 0:  # Log progress
-                        logger.info(f"Processed {processed_count} documents for {process_name}")
+                        logger.info(
+                            f"Processed {processed_count} documents for {process_name}"
+                        )
 
         result = await self.es_repository.bulk_update(generate_update_actions())
         logger.info(f"Completed {process_name}: {result}")
@@ -104,7 +109,7 @@ class DataProcessor:
             field_name="emotion",
             analyzer_func=self.sentiment_analyzer.get_sentiment_label,
             search_params={"not_exists_filters": ["emotion"]},
-            process_name="emotion enrichment"
+            process_name="emotion enrichment",
         )
 
     async def _enrich_documents_with_weapon_info(self):
@@ -116,14 +121,14 @@ class DataProcessor:
             field_name="weapons",
             analyzer_func=weapon_detector.find_weapons,
             search_params={"terms_filters": {"text": weapon_as_list}},
-            process_name="weapon detection"
+            process_name="weapon detection",
         )
 
     async def _cleanup_irrelevant_documents(self):
         search_params = {
             "term_filters": {"Antisemitic": False},
             "not_exists_filters": ["weapons"],
-            "terms_filters": {"emotion": ["neutral", "positive"]}
+            "terms_filters": {"emotion": ["neutral", "positive"]},
         }
 
         docs_to_delete = await self.es_repository.count(**search_params)
@@ -135,8 +140,7 @@ class DataProcessor:
 
         async def generate_delete_actions() -> AsyncGenerator[Dict[str, Any], None]:
             stream = self.es_repository.stream_all_documents(
-                fields_to_include=[],
-                **search_params
+                fields_to_include=[], **search_params
             )
 
             delete_count = 0
@@ -144,7 +148,7 @@ class DataProcessor:
                 yield {
                     "_op_type": "delete",
                     "_index": self.es_repository.index_name,
-                    "_id": doc["_id"]
+                    "_id": doc["_id"],
                 }
                 delete_count += 1
 

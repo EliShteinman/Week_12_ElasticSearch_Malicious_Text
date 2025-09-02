@@ -2,6 +2,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class WeaponDetector:
     def __init__(self, weapons: list):
         self.weapons = set(weapons)

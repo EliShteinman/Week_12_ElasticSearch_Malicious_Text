@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
+
 class DocumentBase(BaseModel):
     TweetID: float
     CreateDate: datetime
@@ -10,7 +11,6 @@ class DocumentBase(BaseModel):
     text: str
     emotion: Optional[str] = None
     weapons: Optional[List[str]] = None
-
 
 
 class DocumentCreate(DocumentBase):

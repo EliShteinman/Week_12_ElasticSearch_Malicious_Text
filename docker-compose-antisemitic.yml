@@ -53,6 +53,9 @@ services:
       - ELASTICSEARCH_PORT=9200
       - LOG_LEVEL=INFO
       - ELASTICSEARCH_INDEX=antisemitic
+      - MAPPING_PATH=/code/app/config/mapping.json
+      - TWEETS_PATH=/code/app/data/tweets.csv
+      - WEAPONS_PATH=/code/app/data/weapons.txt
     networks:
       - elastic_network
     healthcheck:

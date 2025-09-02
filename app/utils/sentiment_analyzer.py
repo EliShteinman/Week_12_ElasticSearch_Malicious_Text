@@ -9,11 +9,15 @@ logger = logging.getLogger(__name__)
 
 class SentimentAnalyzer:
     def __init__(self, path_download: str = None):
-        nltk_dir = (
-            path_download if path_download else os.path.join(os.getcwd(), "nltk_data")
-        )
+        if path_download:
+            nltk_dir = path_download
+        else:
+            nltk_dir = "/tmp/nltk_data"
         try:
+            os.makedirs(nltk_dir, exist_ok=True)
             nltk.download("vader_lexicon", download_dir=nltk_dir, quiet=True)
+            if nltk_dir not in nltk.data.path:
+                nltk.data.path.append(nltk_dir)
             logger.info("VADER lexicon installed successfully")
         except Exception as e:
             logger.error(f"Error installing VADER lexicon: {e}")
